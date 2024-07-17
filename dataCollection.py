@@ -55,7 +55,7 @@ while True:
             hGap = math.ceil((imgSize - hCal)/2) # -- CALCULATE GAP TO CENTER IMAGE
             imgBack[hGap:hCal + hGap, :] = imgResize
         
-        cv2.imshow("Window2", imgBack)
+        cv2.imshow("Hands", imgBack)
 
 
     cv2.imshow("Window", img)
