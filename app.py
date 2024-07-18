@@ -4,6 +4,8 @@ import math
 import random
 import time
 import numpy as np
+import win32.lib.win32con as win32con
+from win32 import win32gui
 from score import getScore
 from cvzone.ClassificationModule import Classifier
 from cvzone.HandTrackingModule import HandDetector
@@ -25,16 +27,17 @@ labels = ["rock", "paper", "scissors"]
 # GLOBAL VARIABLES
 start_time = 0.0
 userChoice = ""
-aiChoice = ""
+compChoice = ""
 userScore = 0
-aiScore = 0
+compScore = 0
+message = ""
 
 while True:
     success, img = cap.read()
     hands, img = detector.findHands(img, draw=False)
 
-    # CHECK IF HANDS IS PRESENT AND IF THE USER AND AI DID NOT CHOOSE YET, THEN CROP HANDS
-    if (hands) and (len(userChoice) == 0) and (len(aiChoice) == 0):
+    # CHECK IF HANDS IS PRESENT AND IF THE USER AND COMPUTER DID NOT CHOOSE YET, THEN CROP HANDS
+    if (hands) and (len(userChoice) == 0) and (len(compChoice) == 0):
         current_time = time.time() # -- GRAB THE CURRENT TIME
 
         if start_time == 0.0:
@@ -84,6 +87,10 @@ while True:
         # CHECK IF 5 SECONDS HAS PASSED
         if (current_time - start_time > 5.0):
             userChoice = labels[index] # -- SET LAST SIGN AS THE USER CHOICE
+    
+    # RESET START TIME IF HANDS IS NOT PRESENT ON THE SCREEN
+    else:
+        start_time = 0.0
 
     # IF USER HAS CHOSEN
     if len(userChoice) != 0:
@@ -92,26 +99,57 @@ while True:
         user_choice_graphics = cv2.resize(user_choice_graphics, (100, 122))
         cvzone.overlayPNG(img, user_choice_graphics, (30, 330))
 
-        # AFTER USER HAS CHOSEN, CHECK IF AI HAS CHOSEN, IF NOT THEN CHOOSE A RANDOM SIGN
-        if len(aiChoice) == 0:
-            aiChoice = random.choice(labels)
-            score = getScore(userChoice, aiChoice) # GET THE WINNER
+        # AFTER USER HAS CHOSEN, CHECK IF COMPUTER HAS CHOSEN, IF NOT THEN CHOOSE A RANDOM SIGN
+        if len(compChoice) == 0:
+            compChoice = random.choice(labels)
+            score = getScore(userChoice, compChoice) # GET THE WINNER
 
             if score == 1: # -- USER WON
                 userScore += 1
-            elif score == -1: # -- AI WON
-                aiScore += 1
-        
-        # AI CHOICE GRAPHICS
-        ai_choice_graphics = cv2.imread(f"graphics/ai_{aiChoice}.png", cv2.IMREAD_UNCHANGED)
-        ai_choice_graphics = cv2.resize(ai_choice_graphics, (100, 122))
-        cvzone.overlayPNG(img, ai_choice_graphics, (510, 330))
+                message = "user"
+            elif score == -1: # -- COMPUTER WON
+                compScore += 1
+                message = "computer"
+            else:
+                message = "tie"
+
+        # SHOW MESSAGE GRAPHICS BASED ON WHO WON THE ROUND
+        if message == "computer":
+            # COMPUTER WIN GRAPHICS
+            comp_win_graphics = cv2.imread(f"graphics/comp_win.png", cv2.IMREAD_UNCHANGED)
+            comp_win_graphics = cv2.resize(comp_win_graphics, (174, 15))
+            comp_win_graphics_x = (img.shape[1] - 174) / 2 # -- CENTER GRAPHICS TO SCREEN (HORIZONTALLY)
+            cvzone.overlayPNG(img, comp_win_graphics, (math.floor(comp_win_graphics_x), 15))
+        elif message == "user":
+            # USER WIN GRAPHICS
+            user_win_graphics = cv2.imread(f"graphics/user_win.png", cv2.IMREAD_UNCHANGED)
+            user_win_graphics = cv2.resize(user_win_graphics, (91, 15))
+            user_win_graphics_x = (img.shape[1] - 91) / 2 # -- CENTER GRAPHICS TO SCREEN (HORIZONTALLY)
+            cvzone.overlayPNG(img, user_win_graphics, (math.floor(user_win_graphics_x), 15))
+        else:
+            # GAME TIE GRAPHICS
+            tie_graphics = cv2.imread(f"graphics/tie.png", cv2.IMREAD_UNCHANGED)
+            tie_graphics = cv2.resize(tie_graphics, (92, 15))
+            tie_graphics_x = (img.shape[1] - 92) / 2 # -- CENTER GRAPHICS TO SCREEN (HORIZONTALLY)
+            cvzone.overlayPNG(img, tie_graphics, (math.floor(tie_graphics_x), 15))
+
+        # COMPUTER CHOICE GRAPHICS
+        comp_choice_graphics = cv2.imread(f"graphics/comp_{compChoice}.png", cv2.IMREAD_UNCHANGED)
+        comp_choice_graphics = cv2.resize(comp_choice_graphics, (100, 122))
+        cvzone.overlayPNG(img, comp_choice_graphics, (510, 330))
+
+        # PRESS SPACEBAR GRAPHICS
+        spacebar_graphics = cv2.imread(f"graphics/spacebar.png", cv2.IMREAD_UNCHANGED)
+        spacebar_graphics = cv2.resize(spacebar_graphics, (150, 70))
+        spacebar_graphics_x = (img.shape[1] - 150) / 2 # -- CENTER GRAPHICS TO SCREEN (HORIZONTALLY)
+        spacebar_graphics_y = (img.shape[0] - 70) / 2 # -- CENTER GRAPHICS TO SCREEN (VERTICALLY)
+        cvzone.overlayPNG(img, spacebar_graphics, (math.floor(spacebar_graphics_x), math.floor(spacebar_graphics_y)))
 
         # CLEAR ALL CHOICES AND START AGAIN AFTER SPACEBAR IS PRESSED | OTHER KEYBIND
         key = cv2.waitKey(1) & 0xFF
         if key == 32: # -- 'SPACEBAR' KEY
             userChoice = ""
-            aiChoice = ""
+            compChoice = ""
             start_time = 0.0
         elif key == 27: # -- 'ESC' KEY
             break
@@ -130,10 +168,10 @@ while True:
         blank_user_choice_graphics = cv2.resize(blank_user_choice_graphics, (100, 122))
         cvzone.overlayPNG(img, blank_user_choice_graphics, (30, 330))
 
-        # BLANK AI CHOICE GRAPHICS
-        blank_ai_choice_graphics = cv2.imread(f"graphics/choice_blank.png", cv2.IMREAD_UNCHANGED)
-        blank_ai_choice_graphics = cv2.resize(blank_ai_choice_graphics, (100, 122))
-        cvzone.overlayPNG(img, blank_ai_choice_graphics, (510, 330))
+        # BLANK COMPUTER CHOICE GRAPHICS
+        blank_comp_choice_graphics = cv2.imread(f"graphics/choice_blank.png", cv2.IMREAD_UNCHANGED)
+        blank_comp_choice_graphics = cv2.resize(blank_comp_choice_graphics, (100, 122))
+        cvzone.overlayPNG(img, blank_comp_choice_graphics, (510, 330))
     
     # STATIC GRAPHICS SECTION
 
@@ -143,20 +181,27 @@ while True:
     cvzone.overlayPNG(img, user_score_graphics, (10, 10))
 
     # USER SCORE
-    cv2.putText(img, text=str(userScore), org=(60,65), fontFace=1,
+    cv2.putText(img, text=str(userScore), org=(70,65), fontFace=1,
                 fontScale=2, color=(255,255,255), thickness=2)
 
-    # AI SCORE GRAPHICS
-    ai_score_graphics = cv2.imread(f"graphics/ai_score.png", cv2.IMREAD_UNCHANGED)
-    ai_score_graphics = cv2.resize(ai_score_graphics, (121, 20))
-    cvzone.overlayPNG(img, ai_score_graphics, (505, 10))
+    # COMPUTER SCORE GRAPHICS
+    comp_score_graphics = cv2.imread(f"graphics/comp_score.png", cv2.IMREAD_UNCHANGED)
+    comp_score_graphics = cv2.resize(comp_score_graphics, (153, 20))
+    cvzone.overlayPNG(img, comp_score_graphics, (480, 10))
 
-    # AI SCORE
-    cv2.putText(img, text=str(aiScore), org=(560,65), fontFace=1,
+    # COMPUTER SCORE
+    cv2.putText(img, text=str(compScore), org=(550,65), fontFace=1,
                 fontScale=2, color=(255,255,255), thickness=2)
 
     cv2.imshow("Rock Paper Scissors Game", img)
     cv2.waitKey(1)
+
+    # ICON
+    hwnd = win32gui.FindWindow(None, "Rock Paper Scissors Game")
+    icon_path = "graphics/icon.ico" # -- FILE SHOULD BE .ICO
+    win32gui.SendMessage(hwnd, win32con.WM_SETICON, win32con.ICON_BIG,
+                        win32gui.LoadImage(None, icon_path, win32con.IMAGE_ICON,
+                        0, 0, win32con.LR_LOADFROMFILE | win32con.LR_DEFAULTSIZE))
 
     # KEYBIND
     k = cv2.waitKey(1) & 0xFF
