@@ -1,5 +1,5 @@
 ## SHORT DEMO
-https://github.com/user-attachments/assets/2519ae17-be0b-48f4-8ab6-8167bb1f5f3a
+https://github.com/user-attachments/assets/1bc5c65b-44c5-4620-a82a-46b68df82292
 
 ## MODEL
 The computer vision model used in this project is a Keras model trained in [Teachable Machine](https://teachablemachine.withgoogle.com/) using a custom dataset.
