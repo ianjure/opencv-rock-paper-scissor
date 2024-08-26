@@ -1,4 +1,4 @@
-# OpenCV Rock-Paper-Scissors Game
+# Rock-Paper-Scissors Game
 The goal of this project is to use OpenCV's functionalities to create a simple rock-paper-scissors game against a computer.
 
 ## Demo
